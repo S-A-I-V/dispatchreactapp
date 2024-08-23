@@ -1,0 +1,36 @@
+.data-table {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .data-table h2 {
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+    color: #1A237E;
+    text-align: center;
+  }
+  
+  .MuiDataGrid-root .MuiDataGrid-columnHeaderTitle {
+    font-weight: bold;
+    color: #333; /* White text for column headers */
+  }
+  
+  .MuiDataGrid-root .MuiDataGrid-columnHeaders {
+    background-color: #1A237E;
+    color: #FFF;
+    borderBottom: "none"; /* Optional to remove bottom border */
+  }
+  
+  .MuiDataGrid-root .MuiDataGrid-cell {
+    font-size: 1rem;
+    color: #333; /* Darker text for cells */
+  }
+  
+  .MuiDataGrid-root .MuiDataGrid-footerContainer {
+    background-color: #1A237E;
+    color: #FFF;
+  }

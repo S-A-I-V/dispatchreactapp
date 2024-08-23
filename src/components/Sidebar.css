@@ -1,0 +1,27 @@
+/* src/components/Sidebar.css */
+.sidebar h2 {
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    color: #ecf0f1;
+  }
+  
+  .sidebar ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .sidebar ul li {
+    margin: 15px 0;
+  }
+  
+  .sidebar ul li a {
+    color: #ecf0f1;
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: color 0.3s ease;
+  }
+  
+  .sidebar ul li a:hover {
+    color: #1abc9c;
+  }
+  
