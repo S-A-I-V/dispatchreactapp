@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './RedundantTrackerDispatch.css';
 
-const RedundantTrackerDispatch = () => {
+const RedundantTracker = () => {
   const [redundantEntries, setRedundantEntries] = useState([]);
 
   useEffect(() => {
-    axios.get('http://localhost:5001/api/redundant-skus-dispatch')
+    axios.get('http://192.168.27.143:5000/api/redundant-skus')
       .then(response => {
         console.log("Redundant SKUs fetched: ", response.data); 
         setRedundantEntries(response.data);
@@ -16,7 +16,7 @@ const RedundantTrackerDispatch = () => {
 
   return (
     <div className="redundant-tracker">
-      <h2>Dispatch Redundant SKU Tracker</h2>
+      <h2>Redundant SKU Tracker</h2>
       {redundantEntries.length > 0 ? (
         <table>
           <thead>
@@ -47,4 +47,4 @@ const RedundantTrackerDispatch = () => {
   );
 };
 
-export default RedundantTrackerDispatch;
+export default RedundantTracker;

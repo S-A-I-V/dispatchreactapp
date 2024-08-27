@@ -1,25 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import './DataEntryDispatch.css';  // You can reuse the same CSS
+import './DataEntryDispatch.css';
 
-const DataEntryDispatch = () => {
+const DataEntry = () => {
   const [formData, setFormData] = useState({
     skuId: '',
-    stationId: process.env.REACT_APP_STATION_ID || '1', // Set station ID from environment variable
-    nexsId: process.env.REACT_APP_NEXS_ID || '00000001', // Set nexsId from environment variable
+    stationId: process.env.REACT_APP_STATION_ID || '1', 
+    nexsId: process.env.REACT_APP_NEXS_ID || '00000001', 
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
 
   const skuInputRef = useRef(null);
-  const timer = useRef(null);
 
   useEffect(() => {
     if (skuInputRef.current) {
       skuInputRef.current.focus();
     }
   }, []);
+
+  useEffect(() => {
+    if (formData.skuId.length === 20) {
+      handleScan();
+    }
+  }, [formData.skuId]);
 
   const formatDate = (date) => {
     let d = new Date(date);
@@ -52,43 +57,47 @@ const DataEntryDispatch = () => {
   };
 
   const handleScan = async () => {
-    setIsSubmitting(true);
-    setError(null);
-    setSuccessMessage('');
+    if (formData.skuId.length === 20) {
+      setIsSubmitting(true);
+      setError(null);
+      setSuccessMessage('');
 
-    const timestamp = formatTimestamp(new Date());
-    const dateOfScan = formatDate(new Date());
+      const timestamp = formatTimestamp(new Date());
+      const dateOfScan = formatDate(new Date());
 
-    const updatedFormData = {
-      ...formData,
-      dateOfScan,
-      timestamp,
-    };
+      const updatedFormData = {
+        ...formData,
+        dateOfScan,
+        timestamp,
+      };
 
-    try {
-      // Check for redundancy
-      const { data } = await axios.get('http://localhost:5001/api/check-duplicate-dispatch', {
-        params: { skuId: formData.skuId, stationId: formData.stationId },
-      });
+      try {
+        // Check for redundancy
+        const { data } = await axios.get('http://192.168.27.143:5000/api/check-duplicate', {
+          params: { skuId: formData.skuId, stationId: formData.stationId },
+        });
 
-      if (data.isDuplicate) {
-        alert('You are scanning a duplicate entry, hand over to shipping incharge');
+        if (data.isDuplicate) {
+          alert('You are scanning a duplicate entry, hand over to shipping incharge');
+        }
+
+        await axios.post('http://192.168.27.143:5000/api/data-entry', updatedFormData);
+        setSuccessMessage('Data submitted successfully');
+        setFormData({
+          skuId: '',
+          stationId: formData.stationId,
+          nexsId: formData.nexsId,
+        });
+        if (skuInputRef.current) {
+          skuInputRef.current.focus();
+        }
+      } catch (error) {
+        setError('There was an error submitting the data. Please try again.');
+      } finally {
+        setIsSubmitting(false);
       }
-      
-      await axios.post('http://localhost:5001/api/data-entry-dispatch', updatedFormData);
-      setSuccessMessage('Data submitted successfully');
-      setFormData({
-        skuId: '',
-        stationId: formData.stationId,
-        nexsId: formData.nexsId, // Retain nexsId after submission
-      });
-      if (skuInputRef.current) {
-        skuInputRef.current.focus();
-      }
-    } catch (error) {
-      setError('There was an error submitting the data. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+    } else {
+      setError('SKU ID must be exactly 20 characters.');
     }
   };
 
@@ -98,21 +107,11 @@ const DataEntryDispatch = () => {
       ...prevState,
       [name]: value,
     }));
-
-    // Clear any previous timer
-    clearTimeout(timer.current);
-
-    // Set a new debounce timer
-    timer.current = setTimeout(() => {
-      if (name === 'skuId' && value) {
-        handleScan();
-      }
-    }, 300); // Adjust the debounce timing as necessary
   };
 
   return (
     <div className="data-entry">
-      <h2>Dispatch Data Entry</h2>
+      <h2>Data Entry</h2>
       <form>
         <div className="form-group">
           <label htmlFor="skuId">Scan SKU ID</label>
@@ -126,6 +125,7 @@ const DataEntryDispatch = () => {
             required
             autoFocus
             ref={skuInputRef}
+            maxLength="20"
           />
         </div>
         <div className="form-group">
@@ -135,7 +135,7 @@ const DataEntryDispatch = () => {
             id="stationId"
             name="stationId"
             value={formData.stationId}
-            onChange={handleChange}  // Allow editing
+            onChange={handleChange}  
             placeholder="Station ID"
           />
         </div>
@@ -146,7 +146,7 @@ const DataEntryDispatch = () => {
             id="nexsId"
             name="nexsId"
             value={formData.nexsId}
-            onChange={handleChange}  // Allow editing
+            onChange={handleChange}  
             placeholder="NEXS ID"
           />
         </div>
@@ -157,4 +157,4 @@ const DataEntryDispatch = () => {
   );
 };
 
-export default DataEntryDispatch;
+export default DataEntry;

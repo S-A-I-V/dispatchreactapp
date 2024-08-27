@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Box } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import './DataTableDispatch.css';  // Reuse the same CSS file
+import './DataTableDispatch.css';
 
-const DataTableDispatch = () => {
+const DataTable = () => {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    axios.get('http://localhost:5001/api/data-dispatch')
+    axios.get('http://192.168.27.143:5000/api/data')
       .then(response => setData(response.data))
       .catch(error => console.error('Error fetching data:', error));
   }, []);
@@ -32,7 +32,7 @@ const DataTableDispatch = () => {
 
   return (
     <Box m="20px">
-      <h2 style={{ color: '#FFFFFF', marginBottom: '10px', textAlign: 'center' }}>Dispatch Data Table</h2>
+      <h2 style={{ color: '#FFFFFF', marginBottom: '10px', textAlign: 'center' }}>Data Table</h2>
       <Box
         m="20px 0 0 0"
         height="75vh"
@@ -81,4 +81,4 @@ const DataTableDispatch = () => {
   );
 };
 
-export default DataTableDispatch;
+export default DataTable;
