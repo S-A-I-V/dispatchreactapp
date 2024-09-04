@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './Sidebar.css';  // Reuse the same CSS file
+import { useRef } from 'react';
 
 const SidebarDispatch = () => (
   <div className="sidebar">

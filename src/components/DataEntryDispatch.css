@@ -97,6 +97,33 @@ button:active {
   margin-top: 10px;
   text-align: center;
 }
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  transition: border-color 0.3s ease;
+  background-color: white; /* Ensure the background is white */
+  color: #34495e; /* Match the text color of the labels */
+  appearance: none; /* Remove default arrow styling */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%204%205%27%3E%3Cpath%20fill%3D%27%2334495e%27%20d%3D%27M2%200L0%202h4zM2%205L0%203h4z%27/%3E%3C/svg%3E');
+  background-repeat: no-repeat;
+  background-position-x: 95%; /* Adjust to position the arrow correctly */
+  background-position-y: 50%;
+  background-size: 12px; /* Adjust the size of the arrow */
+}
 
+.form-group select:focus {
+  border-color: #1abc9c; /* Match the focus color of the input fields */
+  outline: none;
+  box-shadow: 0 0 8px rgba(26, 188, 156, 0.3); /* Match the shadow effect on focus */
+}
+
+.form-group select option {
+  color: #34495e; /* Ensure the dropdown options match the label color */
+}
 
 

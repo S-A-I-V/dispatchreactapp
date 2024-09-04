@@ -5,12 +5,13 @@ import './DataEntryDispatch.css';
 const DataEntry = () => {
   const [formData, setFormData] = useState({
     skuId: '',
-    stationId: process.env.REACT_APP_STATION_ID || '1', 
+    stationId: process.env.REACT_APP_STATION_ID || '', 
     nexsId: process.env.REACT_APP_NEXS_ID || '00000001', 
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
+  const [isDisabled, setIsDisabled] = useState(false);
 
   const skuInputRef = useRef(null);
 
@@ -58,9 +59,16 @@ const DataEntry = () => {
 
   const handleScan = async () => {
     if (formData.skuId.length === 20) {
+      if (formData.stationId === '' || formData.nexsId === '00000001') {
+        setError('Station ID or NEXS ID cannot be default values.');
+        setIsSubmitting(false);
+        return; // Prevent further execution
+      }
+      
       setIsSubmitting(true);
       setError(null);
       setSuccessMessage('');
+      setIsDisabled(true); // Disable input during processing
 
       const timestamp = formatTimestamp(new Date());
       const dateOfScan = formatDate(new Date());
@@ -73,27 +81,37 @@ const DataEntry = () => {
 
       try {
         // Check for redundancy
-        const { data } = await axios.get('http://192.168.27.143:5000/api/check-duplicate', {
-          params: { skuId: formData.skuId, stationId: formData.stationId },
+        const { data } = await axios.get('http://localhost:5000/api/check-duplicate', {
+          params: { skuId: formData.skuId }
         });
 
         if (data.isDuplicate) {
           alert('You are scanning a duplicate entry, hand over to shipping incharge');
         }
 
-        await axios.post('http://192.168.27.143:5000/api/data-entry', updatedFormData);
+        await axios.post('http://localhost:5000/api/data-entry', updatedFormData);
         setSuccessMessage('Data submitted successfully');
         setFormData({
           skuId: '',
           stationId: formData.stationId,
           nexsId: formData.nexsId,
         });
-        if (skuInputRef.current) {
-          skuInputRef.current.focus();
-        }
       } catch (error) {
         setError('There was an error submitting the data. Please try again.');
       } finally {
+        setTimeout(() => {
+          setIsDisabled(false); // Re-enable input after 10 seconds
+          setFormData((prevState) => ({
+            ...prevState,
+            skuId: '', // Clear the SKU ID field
+          }));
+          // Use a callback to ensure focus happens after state updates
+          setTimeout(() => {
+            if (skuInputRef.current) {
+              skuInputRef.current.focus(); // Focus on the SKU ID input
+            }
+          }, 0);
+        }, 10000);
         setIsSubmitting(false);
       }
     } else {
@@ -105,7 +123,7 @@ const DataEntry = () => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
-      [name]: value,
+      [name]: name === 'nexsId' ? value.toUpperCase() : value, // Convert nexsId to uppercase
     }));
   };
 
@@ -126,18 +144,31 @@ const DataEntry = () => {
             autoFocus
             ref={skuInputRef}
             maxLength="20"
+            disabled={isDisabled} // Disable input if isDisabled is true
           />
         </div>
         <div className="form-group">
           <label htmlFor="stationId">Station ID</label>
-          <input
-            type="text"
+          <select
             id="stationId"
             name="stationId"
             value={formData.stationId}
-            onChange={handleChange}  
-            placeholder="Station ID"
-          />
+            onChange={handleChange}
+            required
+            disabled={isDisabled} // Disable input if isDisabled is true
+          >
+            <option value="" disabled>Select Station ID</option>
+            {[...Array(20).keys()].map(i => (
+              <option key={`P${String(i + 1).padStart(3, '0')}`} value={`P${String(i + 1).padStart(3, '0')}`}>
+                P{String(i + 1).padStart(3, '0')}
+              </option>
+            ))}
+            {[...Array(10).keys()].map(i => (
+              <option key={`F${String(i + 1).padStart(3, '0')}`} value={`F${String(i + 1).padStart(3, '0')}`}>
+                F{String(i + 1).padStart(3, '0')}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="form-group">
           <label htmlFor="nexsId">NEXS ID</label>
@@ -146,8 +177,9 @@ const DataEntry = () => {
             id="nexsId"
             name="nexsId"
             value={formData.nexsId}
-            onChange={handleChange}  
+            onChange={handleChange}
             placeholder="NEXS ID"
+            disabled={isDisabled} // Disable input if isDisabled is true
           />
         </div>
       </form>
