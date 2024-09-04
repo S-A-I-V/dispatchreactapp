@@ -21,12 +21,6 @@ const DataEntry = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if (formData.skuId.length === 20) {
-      handleScan();
-    }
-  }, [formData.skuId]);
-
   const formatDate = (date) => {
     let d = new Date(date);
     let month = '' + (d.getMonth() + 1);
@@ -58,64 +52,60 @@ const DataEntry = () => {
   };
 
   const handleScan = async () => {
-    if (formData.skuId.length === 20) {
-      if (formData.stationId === '' || formData.nexsId === '00000001') {
-        setError('Station ID or NEXS ID cannot be default values.');
-        setIsSubmitting(false);
-        return; // Prevent further execution
+    if (formData.stationId === '' || formData.nexsId === '00000001') {
+      setError('Station ID or NEXS ID cannot be default values.');
+      setIsSubmitting(false);
+      return; // Prevent further execution
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+    setSuccessMessage('');
+    setIsDisabled(true); // Disable input during processing
+
+    const timestamp = formatTimestamp(new Date());
+    const dateOfScan = formatDate(new Date());
+
+    const updatedFormData = {
+      ...formData,
+      dateOfScan,
+      timestamp,
+    };
+
+    try {
+      // Check for redundancy
+      const { data } = await axios.get('http://localhost:5002/api/check-duplicate', {
+        params: { skuId: formData.skuId }
+      });
+
+      if (data.isDuplicate) {
+        alert('You are scanning a duplicate entry, hand over to shipping incharge');
       }
-      
-      setIsSubmitting(true);
-      setError(null);
-      setSuccessMessage('');
-      setIsDisabled(true); // Disable input during processing
 
-      const timestamp = formatTimestamp(new Date());
-      const dateOfScan = formatDate(new Date());
-
-      const updatedFormData = {
-        ...formData,
-        dateOfScan,
-        timestamp,
-      };
-
-      try {
-        // Check for redundancy
-        const { data } = await axios.get('http://localhost:5000/api/check-duplicate', {
-          params: { skuId: formData.skuId }
-        });
-
-        if (data.isDuplicate) {
-          alert('You are scanning a duplicate entry, hand over to shipping incharge');
-        }
-
-        await axios.post('http://localhost:5000/api/data-entry', updatedFormData);
-        setSuccessMessage('Data submitted successfully');
-        setFormData({
-          skuId: '',
-          stationId: formData.stationId,
-          nexsId: formData.nexsId,
-        });
-      } catch (error) {
-        setError('There was an error submitting the data. Please try again.');
-      } finally {
+      await axios.post('http://localhost:5002/api/data-entry', updatedFormData);
+      setSuccessMessage('Data submitted successfully');
+      setFormData({
+        skuId: '',
+        stationId: formData.stationId,
+        nexsId: formData.nexsId,
+      });
+    } catch (error) {
+      setError('There was an error submitting the data. Please try again.');
+    } finally {
+      setTimeout(() => {
+        setIsDisabled(false); // Re-enable input after 10 seconds
+        setFormData((prevState) => ({
+          ...prevState,
+          skuId: '', // Clear the SKU ID field
+        }));
+        // Use a callback to ensure focus happens after state updates
         setTimeout(() => {
-          setIsDisabled(false); // Re-enable input after 10 seconds
-          setFormData((prevState) => ({
-            ...prevState,
-            skuId: '', // Clear the SKU ID field
-          }));
-          // Use a callback to ensure focus happens after state updates
-          setTimeout(() => {
-            if (skuInputRef.current) {
-              skuInputRef.current.focus(); // Focus on the SKU ID input
-            }
-          }, 0);
-        }, 10000);
-        setIsSubmitting(false);
-      }
-    } else {
-      setError('SKU ID must be exactly 20 characters.');
+          if (skuInputRef.current) {
+            skuInputRef.current.focus(); // Focus on the SKU ID input
+          }
+        }, 0);
+      }, 10000);
+      setIsSubmitting(false);
     }
   };
 
@@ -125,6 +115,12 @@ const DataEntry = () => {
       ...prevState,
       [name]: name === 'nexsId' ? value.toUpperCase() : value, // Convert nexsId to uppercase
     }));
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && formData.skuId) {
+      handleScan();
+    }
   };
 
   return (
@@ -143,7 +139,7 @@ const DataEntry = () => {
             required
             autoFocus
             ref={skuInputRef}
-            maxLength="20"
+            onKeyPress={handleKeyPress} // Submit when Enter is pressed
             disabled={isDisabled} // Disable input if isDisabled is true
           />
         </div>
