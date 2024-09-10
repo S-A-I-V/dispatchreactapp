@@ -113,7 +113,7 @@ const DataEntry = () => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
-      [name]: name === 'nexsId' ? value.toUpperCase() : value, // Convert nexsId to uppercase
+      [name]: name === 'nexsId' ? value.trim().toUpperCase() : value, // Convert nexsId to uppercase
     }));
   };
 
