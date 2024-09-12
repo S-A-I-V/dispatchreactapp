@@ -111,10 +111,24 @@ const DataEntry = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: name === 'nexsId' ? value.trim().toUpperCase() : value, // Convert nexsId to uppercase
-    }));
+
+    if (name === 'skuId') {
+      // Ensure that skuId does NOT start with 'SNXS'
+      if (!value.startsWith('SNXS')) {
+        setError(null); // Clear any previous error
+        setFormData((prevState) => ({
+          ...prevState,
+          [name]: value, 
+        }));
+      } else {
+        setError('SKU ID should not start with "SNXS".');
+      }
+    } else {
+      setFormData((prevState) => ({
+        ...prevState,
+        [name]: name === 'nexsId' ? value.trim().toUpperCase() : value, // Convert nexsId to uppercase
+      }));
+    }
   };
 
   const handleKeyPress = (e) => {
@@ -139,8 +153,8 @@ const DataEntry = () => {
             required
             autoFocus
             ref={skuInputRef}
-            onKeyPress={handleKeyPress} // Submit when Enter is pressed
-            disabled={isDisabled} // Disable input if isDisabled is true
+            onKeyPress={handleKeyPress} 
+            disabled={isDisabled} 
           />
         </div>
         <div className="form-group">
@@ -151,7 +165,7 @@ const DataEntry = () => {
             value={formData.stationId}
             onChange={handleChange}
             required
-            disabled={isDisabled} // Disable input if isDisabled is true
+            disabled={isDisabled} 
           >
             <option value="" disabled>Select Station ID</option>
             {[...Array(20).keys()].map(i => (
@@ -159,11 +173,6 @@ const DataEntry = () => {
                 D{String(i + 1).padStart(3, '0')}
               </option>
             ))}
-            {/* {[...Array(10).keys()].map(i => (
-              <option key={`F${String(i + 1).padStart(3, '0')}`} value={`F${String(i + 1).padStart(3, '0')}`}>
-                F{String(i + 1).padStart(3, '0')}
-              </option>
-            ))} */}
           </select>
         </div>
         <div className="form-group">
@@ -175,7 +184,7 @@ const DataEntry = () => {
             value={formData.nexsId}
             onChange={handleChange}
             placeholder="NEXS ID"
-            disabled={isDisabled} // Disable input if isDisabled is true
+            disabled={isDisabled}
           />
         </div>
       </form>
